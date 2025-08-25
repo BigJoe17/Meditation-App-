@@ -10,9 +10,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import Slider from '@react-native-community/slider'
 // @ts-ignore
 import audio from '@assets/meditations/it_is_well.mp3'
-
-
-
+import AnimatedBackground from "@/components/animatedBackground";   
 
 export default function MeditationDetails() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -59,7 +57,7 @@ export default function MeditationDetails() {
     }
     return (
         <SafeAreaView className=" flex-1 bg-orange-500 p-4 justify-between">
-
+            <AnimatedBackground />
             <View className="flex-1">
 -
                 <View className="flex-1">
