@@ -9,7 +9,7 @@ import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Slider from '@react-native-community/slider'
 // @ts-ignore
-import audio from '@assets/meditations/audio1.mp3'
+import audio from '@assets/meditations/it_is_well.mp3'
 
 
 
@@ -21,13 +21,6 @@ export default function MeditationDetails() {
     const status = useAudioPlayerStatus(player)
 
     const meditation = meditations.find(med => med.id === Number(id))
-
-    // Debug: Add console.log to see what values we're getting
-    // console.log('Audio Status:', {
-    //     currentTime: status.currentTime,
-    //     duration: status.duration,
-    //     playing: status.playing
-    // });
 
     const formatSeconds = (timeValue: number | null) => {
         if (!timeValue || timeValue === 0) return '0:00';
@@ -48,8 +41,21 @@ export default function MeditationDetails() {
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     };
 
+    // Safety checks
     if (!meditation) {
-        return <Text>Meditation not found</Text>
+        return (
+            <SafeAreaView className="flex-1 bg-orange-500 justify-center items-center">
+                <Text className="text-white text-xl">Meditation not found</Text>
+            </SafeAreaView>
+        );
+    }
+
+    if (!status) {
+        return (
+            <SafeAreaView className="flex-1 bg-orange-500 justify-center items-center">
+                <Text className="text-white text-xl">Loading audio...</Text>
+            </SafeAreaView>
+        );
     }
     return (
         <SafeAreaView className=" flex-1 bg-orange-500 p-4 justify-between">
@@ -83,10 +89,20 @@ export default function MeditationDetails() {
                 </View>
 
                 {/* play/pause Button */}
-
-                <Pressable onPress={() => player.playing ? player.pause() : player.play()} className="bg-zinc-800 self-center w-20 aspect-square rounded-full items-center justify-center">
+                <Pressable 
+                    onPress={() => {
+                        try {
+                            if (player && status) {
+                                status.playing ? player.pause() : player.play();
+                            }
+                        } catch (error) {
+                            console.log('Error playing audio:', error);
+                        }
+                    }} 
+                    className="bg-zinc-800 self-center w-20 aspect-square rounded-full items-center justify-center"
+                >
                     <FontAwesome6
-                        name={status.playing ? "pause" : "play"}
+                        name={status?.playing ? "pause" : "play"}
                         size={24}
                         color="snow"
                     />
@@ -105,10 +121,14 @@ export default function MeditationDetails() {
                             <View>
                                 <Slider
                                     style={{ width: '100%', height: 40 }}
-                                    value={status.duration && status.currentTime ? status.currentTime / status.duration : 0}
+                                    value={status?.duration && status?.currentTime ? status.currentTime / status.duration : 0}
                                     onSlidingComplete={(value) => {
-                                        if (status.duration) {
-                                            player.seekTo(value * status.duration);
+                                        try {
+                                            if (status?.duration && player) {
+                                                player.seekTo(value * status.duration);
+                                            }
+                                        } catch (error) {
+                                            console.log('Error seeking audio:', error);
                                         }
                                     }}
                                     minimumValue={0}
@@ -120,10 +140,10 @@ export default function MeditationDetails() {
                             </View>
                             <View className="flex-row justify-between">
                                 <Text className="text-zinc-700 font-medium">
-                                    {formatSeconds(status.currentTime || 0)}
+                                    {formatSeconds(status?.currentTime || 0)}
                                 </Text>
                                 <Text className="text-zinc-700 font-medium">
-                                    {formatSeconds(status.duration || 0)}
+                                    {formatSeconds(status?.duration || 0)}
                                 </Text>
                             </View>
                         </View>
